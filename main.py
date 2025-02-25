@@ -118,9 +118,15 @@ def main():
                 # Follow-up template with copy button
                 template_col1, template_col2 = st.columns([4, 1])
                 with template_col1:
+                    if 'follow_up_templates' in prospect and template_key in prospect['follow_up_templates']:
+                        follow_up_value = prospect['follow_up_templates'][template_key]
+                    else:
+                        # Provide a default template if the key is missing
+                        follow_up_value = f"[Default follow-up template for {template_key} scenario]"
+
                     st.text_area(
                         "Follow-up Template",
-                        value=prospect['follow_up_templates'][template_key],
+                        value=follow_up_value,
                         height=200,
                         key=f"followup_{current_tab}"
                     )
