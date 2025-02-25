@@ -8,107 +8,144 @@ def main():
     # Apply custom styles
     apply_styles()
 
-    st.title("LinkedIn Prospect Finder 🎯")
+    # Initialize session state
+    if 'prospects' not in st.session_state:
+        st.session_state.prospects = None
+    if 'form_submitted' not in st.session_state:
+        st.session_state.form_submitted = False
+
+    st.title("LinkedIn Prospect Finder")
     st.markdown("""
-    Find potential LinkedIn prospects based on your target criteria. This tool uses AI to suggest 
-    relevant business profiles that match your requirements.
+    Find potential LinkedIn prospects based on your target criteria and get customized outreach templates.
     """)
 
     # Input Form
     with st.form("prospect_form"):
         location = st.text_input(
-            "Location 📍",
+            "Location",
             placeholder="e.g., San Francisco Bay Area, London, etc."
         )
 
         demographic = st.text_input(
-            "Target Demographic 👥",
+            "Target Demographic",
             placeholder="e.g., Small Business Owners, C-level Executives, etc."
         )
 
         industry = st.text_input(
-            "Target Industry 🏢",
+            "Target Industry",
             placeholder="e.g., Software Development, Healthcare, Finance, etc."
         )
 
         submitted = st.form_submit_button("Find Prospects")
 
-    # Form Validation and Processing
+    # Form Processing
     if submitted:
         if not all([location, demographic, industry]):
             st.error("Please fill in all fields to continue.")
-            return
-
-        try:
+        else:
             with st.spinner("Searching for relevant prospects..."):
-                # Simulate loading time for better UX
                 time.sleep(1)
-                prospects = generate_linkedin_prospects(location, demographic, industry)
+                st.session_state.prospects = generate_linkedin_prospects(location, demographic, industry)
+                st.session_state.form_submitted = True
 
-                # Display Results
-                st.subheader("🎉 Potential Prospects Found")
+    # Display Results
+    if st.session_state.form_submitted and st.session_state.prospects:
+        prospects = st.session_state.prospects
 
-                # Create tabs for navigation
-                if prospects:
-                    tabs = st.tabs([f"Prospect {i+1}" for i in range(len(prospects))])
+        # Progress indicator
+        current_tab = st.radio(
+            "Navigate Prospects",
+            options=range(len(prospects)),
+            format_func=lambda x: f"Prospect {x+1} of {len(prospects)}",
+            horizontal=True,
+            label_visibility="collapsed"
+        )
 
-                    for i, (tab, prospect) in enumerate(zip(tabs, prospects)):
-                        with tab:
-                            # Card container with custom styling
-                            st.markdown("""
-                                <div style='
-                                    background-color: white;
-                                    padding: 20px;
-                                    border-radius: 10px;
-                                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-                                    margin-bottom: 20px;'>
-                                """, unsafe_allow_html=True)
+        # Display current prospect card
+        prospect = prospects[current_tab]
 
-                            # Header with name and title
-                            st.markdown(f"""
-                                <h3 style='color: gray; margin-bottom: 5px;'>{prospect['name']}</h3>
-                                <h4 style='color: gray; margin-top: 0;'>{prospect['title']}</h4>
-                                """, unsafe_allow_html=True)
+        # Card container
+        with st.container():
+            # Profile section
+            st.markdown(f"""
+                <div class="prospect-card">
+                    <h3>{prospect['name']}</h3>
+                    <p class="title">{prospect['title']} at {prospect['company']}</p>
+                    <div class="prospect-details">
+                        <p>{prospect['location']}</p>
+                        <p><a href="{prospect['profile_url']}" target="_blank">View Profile ↗</a></p>
+                    </div>
+                </div>
+            """, unsafe_allow_html=True)
 
-                            # Company and location info
-                            st.markdown(f"""
-                                <div style='margin: 15px 0;'>
-                                    <p><strong>🏢 Company:</strong> {prospect['company']}</p>
-                                    <p><strong>📍 Location:</strong> {prospect['location']}</p>
-                                    <p><strong>🔗 Profile:</strong> <a href='{prospect['profile_url']}'>{prospect['profile_url']}</a></p>
-                                </div>
-                                """, unsafe_allow_html=True)
+            # Email templates section
+            tab1, tab2 = st.tabs(["Initial Outreach", "Follow-up Templates"])
 
-                            # Email template section
-                            st.markdown("#### 📧 Email Template")
-                            email_template = st.text_area(
-                                "",
-                                value=prospect['email_template'],
-                                height=200,
-                                key=f"email_{i}",
-                                label_visibility="collapsed"
-                            )
+            with tab1:
+                email_col1, email_col2 = st.columns([4, 1])
+                with email_col1:
+                    st.text_area(
+                        "Initial Email Template",
+                        value=prospect['email_template'],
+                        height=200,
+                        key=f"email_{current_tab}"
+                    )
+                with email_col2:
+                    st.button(
+                        "Copy Template",
+                        key=f"copy_initial_{current_tab}",
+                        type="primary",
+                        use_container_width=True
+                    )
 
-                            # Copy button with better styling
-                            if st.button("📋 Copy Email Template", key=f"copy_{i}", type="primary"):
-                                st.write("Email template copied to clipboard!")
+            with tab2:
+                # Create columns for better layout
+                select_col, _ = st.columns([2, 2])
+                with select_col:
+                    response_type = st.radio(
+                        "Select response scenario:",
+                        ["Positive Response", "Negative Response", "No Response"],
+                        horizontal=True,
+                        key=f"response_type_{current_tab}"
+                    )
 
-                            st.markdown("</div>", unsafe_allow_html=True)
+                template_key = {
+                    "Positive Response": "positive",
+                    "Negative Response": "negative",
+                    "No Response": "no_response"
+                }[response_type]
 
-                # Success message and export option
-                st.success(f"Found {len(prospects)} potential prospects matching your criteria!")
+                # Follow-up template with copy button
+                template_col1, template_col2 = st.columns([4, 1])
+                with template_col1:
+                    st.text_area(
+                        "Follow-up Template",
+                        value=prospect['follow_up_templates'][template_key],
+                        height=200,
+                        key=f"followup_{current_tab}"
+                    )
+                with template_col2:
+                    st.button(
+                        "Copy Template",
+                        key=f"copy_followup_{current_tab}",
+                        type="primary",
+                        use_container_width=True
+                    )
 
-                # Export option
-                df = pd.DataFrame(prospects)
-                st.download_button(
-                    label="📥 Download Results as CSV",
-                    data=df.to_csv(index=False).encode('utf-8'),
-                    file_name='linkedin_prospects.csv',
-                    mime='text/csv',
-                )
-
-        except Exception as e:
-            st.error(f"An error occurred while processing your request: {str(e)}")
+            # Export and stats section
+            with st.expander("Export & Statistics"):
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.metric("Total Prospects", len(prospects))
+                    st.download_button(
+                        label="Download as CSV",
+                        data=pd.DataFrame(prospects).to_csv(index=False).encode('utf-8'),
+                        file_name='linkedin_prospects.csv',
+                        mime='text/csv',
+                    )
+                with col2:
+                    st.metric("Industry", industry)
+                    st.metric("Location", location)
 
 if __name__ == "__main__":
     main()

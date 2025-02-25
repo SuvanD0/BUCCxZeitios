@@ -6,117 +6,133 @@ def apply_styles():
     """
     st.markdown("""
         <style>
-        /* Main container */
-        .main {
-            padding: 2rem;
+        /* Global styles */
+        .stApp {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
         }
 
         /* Headers */
-        .title {
-            color: #6c757d; /* Changed to grey */
-            font-weight: 600;
+        h1, h2, h3, h4 {
+            font-weight: 500;
+            color: #2d3748;
         }
 
         /* Form styling */
-        .stForm {
-            background-color: #ffffff;
-            padding: 2rem;
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        .stForm > div[data-testid="stForm"] {
+            border: none;
+            background-color: #f7fafc;
+            border-radius: 8px;
+            padding: 1.5rem;
         }
 
-        /* Input fields */
-        .stTextInput {
-            border: 1px solid #e1e1e1;
-            border-radius: 5px;
-        }
-
-        /* Submit button */
-        .stButton>button {
-            background-color: #6c757d; /* Changed to grey */
-            color: white;
-            font-weight: 600;
-            padding: 0.5rem 2rem;
-            border-radius: 5px;
-        }
-
-        /* Tabs styling */
-        .stTabs [data-baseweb="tab-list"] {
+        /* Radio buttons (navigation) */
+        .stRadio > div {
+            display: flex;
             gap: 8px;
+            background-color: #f7fafc;
+            padding: 8px;
+            border-radius: 6px;
         }
 
-        .stTabs [data-baseweb="tab"] {
-            background-color: #f8f9fa;
-            border-radius: 4px;
-            color: #6c757d; /* Changed to grey */
-            padding: 8px 16px;
+        /* Prospect card styling */
+        .prospect-card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 1.25rem;
+            margin: 1rem 0;
+            border: 1px solid #edf2f7;
         }
 
-        .stTabs [data-baseweb="tab"][aria-selected="true"] {
-            background-color: #6c757d; /* Changed to grey */
+        .prospect-card h3 {
+            color: #2d3748;
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 500;
+        }
+
+        .prospect-card .title {
+            color: #4a5568;
+            margin: 0.5rem 0;
+            font-size: 1rem;
+        }
+
+        .prospect-details {
+            margin-top: 0.75rem;
+            color: #718096;
+            font-size: 0.875rem;
+        }
+
+        /* Button styling */
+        .stButton > button {
+            border-radius: 6px;
+            font-weight: 500;
+            transition: all 0.2s;
+            border: 1px solid #e2e8f0;
+            background-color: #f8fafc;
+            color: #2d3748;
+        }
+
+        .stButton > button[data-testid="baseButton-primary"] {
+            background-color: #2d3748;
             color: white;
+            border: none;
+        }
+
+        .stButton > button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
 
         /* Text area styling */
         .stTextArea textarea {
-            border: 1px solid #e1e1e1;
-            border-radius: 5px;
-            font-family: 'Inter', sans-serif;
-            padding: 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            line-height: 1.5;
+            padding: 0.75rem;
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
         }
 
-        /* Success messages */
-        .success {
-            background-color: #ecfdf3;
-            color: #027a48;
-            padding: 1rem;
-            border-radius: 5px;
+        /* Metrics styling */
+        [data-testid="stMetricValue"] {
+            font-size: 1.25rem;
+            color: #2d3748;
         }
 
-        /* Error messages */
-        .error {
-            background-color: #fef3f2;
-            color: #b42318;
-            padding: 1rem;
-            border-radius: 5px;
+        /* Link styling */
+        a {
+            color: #2d3748;
+            text-decoration: none;
+            font-weight: 500;
         }
 
-        /* Loading spinner */
-        .stSpinner {
-            color: #6c757d; /* Changed to grey */
+        a:hover {
+            text-decoration: underline;
         }
 
-        /* Card styling */
-        div[data-testid="stExpander"] {
+        /* Tab styling */
+        .stTabs [data-baseweb="tab-list"] {
+            gap: 0;
+            background-color: #f7fafc;
+            padding: 0.5rem;
+            border-radius: 6px;
+        }
+
+        .stTabs [data-baseweb="tab"] {
+            border-radius: 4px;
+            padding: 0.5rem 1rem;
+            color: #4a5568;
+        }
+
+        .stTabs [data-baseweb="tab"][aria-selected="true"] {
             background-color: white;
-            border-radius: 10px;
-            border: 1px solid #e1e1e1;
-            margin-bottom: 1rem;
+            color: #2d3748;
         }
 
-        div[data-testid="stExpander"] > div:first-child {
-            background-color: #f8f9fa;
-            border-top-left-radius: 10px;
-            border-top-right-radius: 10px;
-            padding: 1rem;
-        }
-        /* DataFrames */
-        .dataframe {
-            font-family: 'Inter', sans-serif;
-            border-collapse: collapse;
-            width: 100%;
-        }
-
-        .dataframe th {
-            background-color: #f8f9fa;
-            font-weight: 600;
-            text-align: left;
-            padding: 12px;
-        }
-
-        .dataframe td {
-            padding: 12px;
-            border-bottom: 1px solid #e1e1e1;
+        /* Expander styling */
+        .streamlit-expanderHeader {
+            font-size: 0.875rem;
+            color: #4a5568;
         }
         </style>
     """, unsafe_allow_html=True)
