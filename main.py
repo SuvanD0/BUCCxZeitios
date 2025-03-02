@@ -13,44 +13,183 @@ def main():
         st.session_state.prospects = None
     if 'form_submitted' not in st.session_state:
         st.session_state.form_submitted = False
+    if 'show_industry_questions' not in st.session_state:
+        st.session_state.show_industry_questions = False
+    if 'industry_selected' not in st.session_state:
+        st.session_state.industry_selected = None
+    if 'industry_focus' not in st.session_state:
+        st.session_state.industry_focus = ""
+    if 'target_role' not in st.session_state:
+        st.session_state.target_role = ""
 
     st.title("LinkedIn Prospect Finder")
     st.markdown("""
     Find potential LinkedIn prospects based on your target criteria and get customized outreach templates.
     """)
 
-    # Input Form
-    with st.form("prospect_form"):
-        location = st.text_input(
-            "Location",
-            placeholder="e.g., San Francisco Bay Area, London, etc."
-        )
+    # Define industry list
+    industry_list = [
+        "Technology & Software",
+        "Finance & Banking",
+        "Healthcare & Pharmaceuticals",
+        "Manufacturing & Industrial",
+        "Retail & E-commerce",
+        "Education & Training",
+        "Professional Services",
+        "Media & Entertainment",
+        "Energy & Utilities"
+    ]
+    
+    # Industry-specific questions
+    industry_questions = {
+        "Technology & Software": {
+            "focus_question": "What market segment are you targeting?",
+            "focus_options": ["B2B", "B2C", "Enterprise", "SMB", "Startups"],
+            "role_question": "What is your ideal target role?",
+            "role_options": ["CTO/CIO", "Software Engineers", "Product Managers", "IT Directors", "DevOps"]
+        },
+        "Finance & Banking": {
+            "focus_question": "What financial segment are you targeting?",
+            "focus_options": ["Retail Banking", "Investment Banking", "Wealth Management", "Insurance", "Fintech"],
+            "role_question": "What is your ideal target role?",
+            "role_options": ["CFO", "Financial Advisors", "Risk Managers", "Investment Analysts", "Banking Executives"]
+        },
+        "Healthcare & Pharmaceuticals": {
+            "focus_question": "What healthcare segment are you targeting?",
+            "focus_options": ["Hospitals", "Clinics", "Research", "Pharmaceuticals", "Medical Devices"],
+            "role_question": "What is your ideal target role?",
+            "role_options": ["Physicians", "Hospital Administrators", "Research Directors", "Medical Staff", "Healthcare IT"]
+        },
+        "Manufacturing & Industrial": {
+            "focus_question": "What manufacturing segment are you targeting?",
+            "focus_options": ["Automotive", "Electronics", "Chemical", "Aerospace", "Consumer Goods"],
+            "role_question": "What is your ideal target role?",
+            "role_options": ["Plant Managers", "Operations Directors", "Supply Chain Managers", "Quality Control", "Engineers"]
+        },
+        "Retail & E-commerce": {
+            "focus_question": "What retail segment are you targeting?",
+            "focus_options": ["Brick & Mortar", "Online-only", "Omnichannel", "Luxury", "Mass Market"],
+            "role_question": "What is your ideal target role?",
+            "role_options": ["Merchandisers", "Digital Marketing Managers", "Store Managers", "E-commerce Directors", "Retail Buyers"]
+        },
+        "Education & Training": {
+            "focus_question": "What education segment are you targeting?",
+            "focus_options": ["K-12", "Higher Education", "Corporate Training", "Online Learning", "EdTech"],
+            "role_question": "What is your ideal target role?",
+            "role_options": ["School Administrators", "Faculty", "Educational Directors", "Training Managers", "EdTech Buyers"]
+        },
+        "Professional Services": {
+            "focus_question": "What professional service segment are you targeting?",
+            "focus_options": ["Consulting", "Legal", "Accounting", "HR", "Marketing Agencies"],
+            "role_question": "What is your ideal target role?",
+            "role_options": ["Partners", "Practice Leaders", "Associates", "Consultants", "Department Heads"]
+        },
+        "Media & Entertainment": {
+            "focus_question": "What media segment are you targeting?",
+            "focus_options": ["Film & TV", "Music", "Digital Media", "Publishing", "Gaming"],
+            "role_question": "What is your ideal target role?",
+            "role_options": ["Content Creators", "Producers", "Studio Executives", "Media Buyers", "Creative Directors"]
+        },
+        "Energy & Utilities": {
+            "focus_question": "What energy segment are you targeting?",
+            "focus_options": ["Oil & Gas", "Renewable Energy", "Utilities", "Power Generation", "Energy Services"],
+            "role_question": "What is your ideal target role?",
+            "role_options": ["Operations Managers", "Project Engineers", "Sustainability Directors", "Plant Supervisors", "Business Development"]
+        }
+    }
 
-        demographic = st.text_input(
-            "Target Demographic",
-            placeholder="e.g., Small Business Owners, C-level Executives, etc."
-        )
+    # Input Form - Step 1
+    if not st.session_state.show_industry_questions:
+        with st.form("industry_form"):
+            location = st.text_input(
+                "Location",
+                placeholder="e.g., San Francisco Bay Area, London, etc."
+            )
 
-        industry = st.text_input(
-            "Target Industry",
-            placeholder="e.g., Software Development, Healthcare, Finance, etc."
-        )
+            demographic = st.text_input(
+                "Target Demographic",
+                placeholder="e.g., Small Business Owners, C-level Executives, etc."
+            )
 
-        submitted = st.form_submit_button("Find Prospects")
+            industry = st.selectbox(
+                "Target Industry",
+                options=industry_list,
+                key="industry_dropdown"
+            )
 
-    # Form Processing
-    if submitted:
-        if not all([location, demographic, industry]):
-            st.error("Please fill in all fields to continue.")
-        else:
+            submitted_step1 = st.form_submit_button("Next")
+
+        if submitted_step1:
+            if not all([location, demographic, industry]):
+                st.error("Please fill in all fields to continue.")
+            else:
+                st.session_state.location = location
+                st.session_state.demographic = demographic
+                st.session_state.industry_selected = industry
+                st.session_state.show_industry_questions = True
+                # Use st.rerun() instead of st.experimental_rerun()
+                st.rerun()
+
+    # Input Form - Step 2 (Industry-specific questions)
+    if st.session_state.show_industry_questions and not st.session_state.form_submitted:
+        industry = st.session_state.industry_selected
+        
+        with st.form("industry_questions_form"):
+            st.subheader(f"Tell us more about your {industry} prospects")
+            
+            # Display industry-specific questions
+            if industry in industry_questions:
+                focus_q = industry_questions[industry]["focus_question"]
+                focus_options = industry_questions[industry]["focus_options"]
+                
+                industry_focus = st.selectbox(
+                    focus_q,
+                    options=focus_options,
+                    key="industry_focus_select"
+                )
+                
+                role_q = industry_questions[industry]["role_question"]
+                role_options = industry_questions[industry]["role_options"]
+                
+                target_role = st.selectbox(
+                    role_q,
+                    options=role_options,
+                    key="target_role_select"
+                )
+            
+            submitted_step2 = st.form_submit_button("Find Prospects")
+        
+        if submitted_step2:
+            st.session_state.industry_focus = industry_focus
+            st.session_state.target_role = target_role
+            
             with st.spinner("Searching for relevant prospects..."):
                 time.sleep(1)
-                st.session_state.prospects = generate_linkedin_prospects(location, demographic, industry)
+                # Pass additional parameters to the prospect generator
+                st.session_state.prospects = generate_linkedin_prospects(
+                    st.session_state.location, 
+                    st.session_state.demographic, 
+                    st.session_state.industry_selected,
+                    st.session_state.industry_focus,
+                    st.session_state.target_role
+                )
                 st.session_state.form_submitted = True
-
+                # Use st.rerun() instead of st.experimental_rerun()
+                st.rerun()
+    
     # Display Results
     if st.session_state.form_submitted and st.session_state.prospects:
         prospects = st.session_state.prospects
+
+        # Display the refined criteria
+        with st.container():
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.info(f"**Industry:** {st.session_state.industry_selected}")
+            with col2:
+                st.info(f"**Focus:** {st.session_state.industry_focus}")
+            with col3:
+                st.info(f"**Target Role:** {st.session_state.target_role}")
 
         # Progress indicator
         current_tab = st.radio(
@@ -140,7 +279,7 @@ def main():
 
             # Export and stats section
             with st.expander("Export & Statistics"):
-                col1, col2 = st.columns(2)
+                col1, col2, col3 = st.columns(3)
                 with col1:
                     st.metric("Total Prospects", len(prospects))
                     st.download_button(
@@ -150,8 +289,18 @@ def main():
                         mime='text/csv',
                     )
                 with col2:
-                    st.metric("Industry", industry)
-                    st.metric("Location", location)
+                    st.metric("Industry", st.session_state.industry_selected)
+                    st.metric("Focus", st.session_state.industry_focus)
+                with col3:
+                    st.metric("Location", st.session_state.location)
+                    st.metric("Target Role", st.session_state.target_role)
+            
+            # Reset button to start a new search
+            if st.button("Start New Search", type="secondary"):
+                for key in st.session_state.keys():
+                    del st.session_state[key]
+                # Use st.rerun() instead of st.experimental_rerun()
+                st.rerun()
 
 if __name__ == "__main__":
     main()
